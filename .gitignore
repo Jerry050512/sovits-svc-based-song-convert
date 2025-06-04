@@ -1,0 +1,9 @@
+output/
+pretrained_models/
+
+*.mp3
+*.wav
+*.ogg
+
+__pycache__/
+*.pyc
