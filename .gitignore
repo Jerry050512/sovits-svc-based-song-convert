@@ -7,3 +7,4 @@ pretrained_models/
 
 __pycache__/
 *.pyc
+so-vits-svc
