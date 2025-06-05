@@ -1,11 +1,15 @@
 import os
-from pydub import AudioSegment
-from pydub.exceptions import CouldntDecodeError
+# pydub.AudioSegment and CouldntDecodeError are no longer needed at the top-level
+# as the __main__ block's dummy file creation uses pydub.generators
+# and the main functions now rely on audio_utils.
+
+# Import functions from audio_utils
+from utils.audio_utils import is_supported_audio_file, get_file_duration, format_duration
 
 def get_audio_total_length(directory_path, supported_formats=None):
     """
     Calculates the total length of all supported audio files in a given directory
-    and its subdirectories.
+    and its subdirectories using functions from audio_utils.
 
     Args:
         directory_path (str): The path to the directory to scan.
@@ -33,22 +37,20 @@ def get_audio_total_length(directory_path, supported_formats=None):
 
     for root, _, files in os.walk(directory_path):
         for filename in files:
-            file_extension = filename.split('.')[-1].lower()
-            if file_extension in supported_formats:
+            if is_supported_audio_file(filename, supported_formats):
                 filepath = os.path.join(root, filename)
-                try:
-                    # Load the audio file
-                    audio = AudioSegment.from_file(filepath, format=file_extension)
-                    duration_ms = len(audio) # Length in milliseconds
-                    total_duration_seconds += duration_ms / 1000.0 # Convert to seconds
+                duration_seconds = get_file_duration(filepath) # file_extension is handled by get_file_duration
+
+                if duration_seconds is not None:
+                    total_duration_seconds += duration_seconds
                     processed_files_count += 1
-                    print(f"  Processed: {filename} ({duration_ms / 1000:.2f}s)")
-                except CouldntDecodeError:
-                    print(f"  Skipped (decoding error): {filename} - Ensure ffmpeg is installed and accessible.")
+                    # Individual file processing messages are now in get_file_duration or can be added here if needed
+                    print(f"  Processed: {filename} ({duration_seconds:.2f}s)")
+                else:
+                    # get_file_duration already prints a warning for decoding/other errors
+                    print(f"  Skipped: {filename} (error during processing)")
                     skipped_files_count += 1
-                except Exception as e:
-                    print(f"  Skipped (other error): {filename} - {e}")
-                    skipped_files_count += 1
+            # Files not in supported_formats are silently skipped by is_supported_audio_file
 
     print(f"\n--- Summary ---")
     print(f"Total files processed: {processed_files_count}")
@@ -56,15 +58,7 @@ def get_audio_total_length(directory_path, supported_formats=None):
 
     return total_duration_seconds
 
-def format_duration(total_seconds):
-    """
-    Formats a total duration in seconds into a human-readable string (HH:MM:SS).
-    """
-    hours = int(total_seconds // 3600)
-    minutes = int((total_seconds % 3600) // 60)
-    seconds = total_seconds % 60
-    return f"{hours:02d}:{minutes:02d}:{seconds:05.2f}"
-
+# format_duration function is now imported from audio_utils, so the local definition is removed.
 
 # --- Example Usage ---
 if __name__ == "__main__":
@@ -75,21 +69,25 @@ if __name__ == "__main__":
     audio_directory = input("Input audio directory: ") # You can change this to your desired directory
 
     # Create dummy input files for demonstration if the directory doesn't exist
+    # This part uses pydub.generators.Sine().to_audio_segment(),
+    # which does not require a top-level 'from pydub import AudioSegment'.
     if not os.path.exists(audio_directory):
         os.makedirs(audio_directory)
         print(f"Created dummy input directory: {audio_directory}")
         try:
-            from pydub.generators import Sine
+            from pydub.generators import Sine # This specific import is fine here.
             # Create a 10-second dummy WAV file
-            sine_wave_1 = Sine(440).to_audio_segment(duration=10000)
+            sine_wave_1 = Sine(440).to_audio_segment(duration=10000) # duration in ms
             sine_wave_1.export(os.path.join(audio_directory, "dummy_1.wav"), format="wav")
             # Create a 5-second dummy MP3 file (requires LAME encoder for ffmpeg)
-            sine_wave_2 = Sine(660).to_audio_segment(duration=5000)
+            sine_wave_2 = Sine(660).to_audio_segment(duration=5000) # duration in ms
             sine_wave_2.export(os.path.join(audio_directory, "dummy_2.mp3"), format="mp3")
             # Create a 7-second dummy FLAC file
-            sine_wave_3 = Sine(880).to_audio_segment(duration=7000)
+            sine_wave_3 = Sine(880).to_audio_segment(duration=7000) # duration in ms
             sine_wave_3.export(os.path.join(audio_directory, "dummy_3.flac"), format="flac")
             print("Created dummy audio files for testing.")
+        except ImportError:
+            print("pydub.generators not available to create dummy files. Please ensure pydub is installed.")
         except Exception as e:
             print(f"Could not create dummy audio files (requires pydub.generators and potentially LAME for MP3): {e}")
             print(f"Please place some audio files (e.g., .wav, .mp3) in '{audio_directory}' manually for testing.")
@@ -98,6 +96,7 @@ if __name__ == "__main__":
     total_audio_length_seconds = get_audio_total_length(audio_directory)
 
     if total_audio_length_seconds > 0:
+        # format_duration is now imported from utils.audio_utils
         formatted_length = format_duration(total_audio_length_seconds)
         print(f"\nTotal audio length found: {formatted_length}")
     else:
