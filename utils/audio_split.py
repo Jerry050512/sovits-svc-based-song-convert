@@ -1,7 +1,8 @@
 import os
-import hashlib
+# import hashlib # Removed, as this is now handled by audio_utils.generate_chunk_filename
 from pydub import AudioSegment
 from pydub.utils import make_chunks
+from utils.audio_utils import generate_chunk_filename # Added import
 
 def split_audio_files(
     input_directory,
@@ -12,6 +13,7 @@ def split_audio_files(
 ):
     """
     Walks through a directory, reads audio files, and splits them into smaller pieces.
+    Uses generate_chunk_filename from audio_utils for naming output files.
 
     Args:
         input_directory (str): The path to the directory to walk through.
@@ -21,8 +23,7 @@ def split_audio_files(
         segment_duration_ms (int): The duration of each audio segment in milliseconds.
                                    Default is 5000ms (5 seconds).
         naming_convention (str): The naming convention for the split files.
-                                 "hash": Uses a hash of the original file name and segment index.
-                                 "indexed": Uses the original file name with an index.
+                                 Refer to utils.audio_utils.generate_chunk_filename for details.
                                  Default is "hash".
     """
 
@@ -41,20 +42,14 @@ def split_audio_files(
                     chunks = make_chunks(audio, segment_duration_ms)
 
                     for i, chunk in enumerate(chunks):
-                        if naming_convention == "hash":
-                            # Create a unique hash for the chunk
-                            unique_string = f"{original_filepath}-{i}"
-                            hash_name = hashlib.md5(unique_string.encode()).hexdigest()
-                            output_filename = f"{hash_name}.{audio_format}"
-                        elif naming_convention == "indexed":
-                            base_name = os.path.splitext(filename)[0]
-                            output_filename = f"{base_name}_part{i:03d}.{audio_format}"
-                        else:
-                            print(f"Warning: Invalid naming convention '{naming_convention}'. Using 'hash'.")
-                            unique_string = f"{original_filepath}-{i}"
-                            hash_name = hashlib.md5(unique_string.encode()).hexdigest()
-                            output_filename = f"{hash_name}.{audio_format}"
-
+                        # Replace old naming logic with a call to the utility function
+                        output_filename = generate_chunk_filename(
+                            original_filepath=original_filepath,
+                            segment_index=i,
+                            naming_convention=naming_convention,
+                            audio_format=audio_format,
+                            original_filename=filename
+                        )
 
                         output_filepath = os.path.join(output_directory, output_filename)
                         chunk.export(output_filepath, format=audio_format)
