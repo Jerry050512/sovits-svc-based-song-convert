@@ -10,7 +10,7 @@
 4. Use vocal voice to train custom model.
 5. Predict for a new song(extract new vocal voice and convert and remix with music).
 
-In this demo tutorial, we collect 84 songs of Mayday from their 3 albums, 1 music collection, 1 live album, and 5 singles released in recent 15 years. Total time length: 06:06:04.06.
+In this demo tutorial, we collect 84 songs of Mayday from their 3 albums, 1 music collection, 1 live album, and 5 singles released in recent 15 years. Total time length: 06:06:04.06. (Valid time: 05:19:14.98)
 
 There are few ways to extract vocal voice from music. Here are two recommendations: Ultimate Vocal Remover (UVR) & Spleeter. Skip these two sections if you have pure vocal voice.
 
@@ -43,3 +43,7 @@ delete_low_loudness_audio_files(low_loudness_audio_directory, loudness_threshold
 
 ### Strike for Training!
 
+#### Pre-Trained Model Download
+
+- So-Vits: [D_0.pth, G_0.pth](https://huggingface.co/langeheris/Sovits-4.0-V2-Pretrained-Model/tree/main)
+- DDSP-SVC: [model_0.pt](https://github.com/yxlllc/DDSP-SVC/releases/tag/5.0)

@@ -132,51 +132,30 @@ if __name__ == "__main__":
     # to the directory containing your audio files.
     # For example: current_directory = os.getcwd()
     # For example: specific_directory = "/home/user/music"
-    audio_directory = "input_audio" # You can change this to your desired directory
-    low_loudness_audio_directory = "input_audio" # Directory for loudness test
+    low_loudness_audio_directory = input("Input audio directory: ") # Directory for loudness test
 
-    # Create dummy input files for demonstration if the directory doesn't exist
-    if not os.path.exists(audio_directory):
-        os.makedirs(audio_directory)
-        print(f"Created dummy input directory: {audio_directory}")
-        try:
-            from pydub.generators import Sine
-            # Create a 10-second dummy WAV file
-            sine_wave_1 = Sine(440).to_audio_segment(duration=10000)
-            sine_wave_1.export(os.path.join(audio_directory, "dummy_1.wav"), format="wav")
-            # Create a 5-second dummy MP3 file (requires LAME encoder for ffmpeg)
-            sine_wave_2 = Sine(660).to_audio_segment(duration=5000)
-            sine_wave_2.export(os.path.join(audio_directory, "dummy_2.mp3"), format="mp3")
-            # Create a 7-second dummy FLAC file
-            sine_wave_3 = Sine(880).to_audio_segment(duration=7000)
-            sine_wave_3.export(os.path.join(audio_directory, "dummy_3.flac"), format="flac")
-            print("Created dummy audio files for testing.")
-        except Exception as e:
-            print(f"Could not create dummy audio files (requires pydub.generators and potentially LAME for MP3): {e}")
-            print(f"Please place some audio files (e.g., .wav, .mp3) in '{audio_directory}' manually for testing.")
+    # # --- Test for low loudness deletion ---
+    # # Create a separate directory for testing loudness deletion,
+    # # as files will be removed from it.
+    # if os.path.exists(low_loudness_audio_directory):
+    #     import shutil
+    #     shutil.rmtree(low_loudness_audio_directory) # Clean up previous test runs
+    # os.makedirs(low_loudness_audio_directory)
+    # print(f"\nCreated test directory for loudness deletion: {low_loudness_audio_directory}")
 
-    # --- Test for low loudness deletion ---
-    # Create a separate directory for testing loudness deletion,
-    # as files will be removed from it.
-    if os.path.exists(low_loudness_audio_directory):
-        import shutil
-        shutil.rmtree(low_loudness_audio_directory) # Clean up previous test runs
-    os.makedirs(low_loudness_audio_directory)
-    print(f"\nCreated test directory for loudness deletion: {low_loudness_audio_directory}")
+    # try:
+    #     from pydub.generators import Sine
+    #     # Create a loud dummy file
+    #     loud_sine = Sine(1000).to_audio_segment(duration=2000, volume=-10) # -10 dBFS (relatively loud)
+    #     loud_sine.export(os.path.join(low_loudness_audio_directory, "loud_audio.wav"), format="wav")
 
-    try:
-        from pydub.generators import Sine
-        # Create a loud dummy file
-        loud_sine = Sine(1000).to_audio_segment(duration=2000, volume=-10) # -10 dBFS (relatively loud)
-        loud_sine.export(os.path.join(low_loudness_audio_directory, "loud_audio.wav"), format="wav")
-
-        # Create a quiet dummy file
-        quiet_sine = Sine(500).to_audio_segment(duration=2000, volume=-40) # -40 dBFS (relatively quiet)
-        quiet_sine.export(os.path.join(low_loudness_audio_directory, "quiet_audio.wav"), format="wav")
-        print("Created dummy loud and quiet audio files for loudness testing.")
-    except Exception as e:
-        print(f"Could not create dummy loud/quiet audio files: {e}")
-        print(f"Please manually place 'loud_audio.wav' (e.g., -10dBFS) and 'quiet_audio.wav' (e.g., -40dBFS) in '{low_loudness_audio_directory}' for testing.")
+    #     # Create a quiet dummy file
+    #     quiet_sine = Sine(500).to_audio_segment(duration=2000, volume=-40) # -40 dBFS (relatively quiet)
+    #     quiet_sine.export(os.path.join(low_loudness_audio_directory, "quiet_audio.wav"), format="wav")
+    #     print("Created dummy loud and quiet audio files for loudness testing.")
+    # except Exception as e:
+    #     print(f"Could not create dummy loud/quiet audio files: {e}")
+    #     print(f"Please manually place 'loud_audio.wav' (e.g., -10dBFS) and 'quiet_audio.wav' (e.g., -40dBFS) in '{low_loudness_audio_directory}' for testing.")
 
 
     # --- Run the loudness deletion script ---
@@ -184,11 +163,3 @@ if __name__ == "__main__":
     loudness_threshold = -30.0
     delete_low_loudness_audio_files(low_loudness_audio_directory, loudness_threshold)
 
-    # --- Original total length calculation (still available) ---
-    total_audio_length_seconds = get_audio_total_length(audio_directory)
-
-    if total_audio_length_seconds > 0:
-        formatted_length = format_duration(total_audio_length_seconds)
-        print(f"\nTotal audio length found in '{audio_directory}': {formatted_length}")
-    else:
-        print(f"\nNo audio files found or processed in '{audio_directory}'.")

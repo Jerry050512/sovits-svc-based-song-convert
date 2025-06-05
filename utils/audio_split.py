@@ -89,17 +89,17 @@ if __name__ == "__main__":
         input_directory=input_dir,
         output_directory=output_dir,
         audio_format="wav",
-        segment_duration_ms=5000,
+        segment_duration_ms=8000,
         naming_convention="hash"
     )
 
-    print("\n--- Splitting with Indexed Naming ---")
-    # Example 2: Split MP3 files (if you have them) into 3-second pieces with indexed names
-    # You would need to change audio_format to "mp3" and have mp3 files in your input_dir
-    split_audio_files(
-        input_directory=input_dir,
-        output_directory="output_audio_indexed",
-        audio_format="wav", # Change to "mp3" if you have mp3s
-        segment_duration_ms=3000,
-        naming_convention="indexed"
-    )
+    # print("\n--- Splitting with Indexed Naming ---")
+    # # Example 2: Split MP3 files (if you have them) into 3-second pieces with indexed names
+    # # You would need to change audio_format to "mp3" and have mp3 files in your input_dir
+    # split_audio_files(
+    #     input_directory=input_dir,
+    #     output_directory="output_audio_indexed",
+    #     audio_format="wav", # Change to "mp3" if you have mp3s
+    #     segment_duration_ms=3000,
+    #     naming_convention="indexed"
+    # )
