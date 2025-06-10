@@ -18,6 +18,8 @@ There are few ways to extract vocal voice from music. Here are two recommendatio
 
 #### Spleeter
 
+Spleeter is a reknown Python library that helps you split music audio into vocal audio and the background music audio. Or you can even split into multiple stems.
+
 Skip this section if you have use UVR to get vocal voice from the music.
 
 #### Pre-Process the Audio Data
@@ -47,3 +49,45 @@ delete_low_loudness_audio_files(low_loudness_audio_directory, loudness_threshold
 
 - So-Vits: [D_0.pth, G_0.pth](https://huggingface.co/langeheris/Sovits-4.0-V2-Pretrained-Model/tree/main)
 - DDSP-SVC: [model_0.pt](https://github.com/yxlllc/DDSP-SVC/releases/tag/5.0)
+- NSF-HIFIGAN: [nsf_hifigan_20221211.zip](https://github.com/openvpi/vocoders/releases/download/nsf-hifigan-v1/nsf_hifigan_20221211.zip)
+
+1. Put `checkpoint_best_legacy_500.pt` to the `pretrain` directory.
+2. Put `D_0.pth` `G_0.pth` to the `logs/44k` directory.
+3. Put `model_0.pt` to the `logs/44k/diffusion` directory.
+4. Put the 4 files extracted from the compressed zip to `pretrain/nsf_hifigan`
+
+#### Prepare the Dataset
+
+```
+python resample.py
+python preprocess_flist_config.py --speech_encoder vec768l12
+python preprocess_hubert_f0.py --f0_predictor dio
+python preprocess_hubert_f0.py --f0_predictor dio --use_diff --num_processes 4
+```
+These commands do the following things: 
+1. Resample audio files.
+2. Generate and split the dataset.
+3. Preprocess hubert and f0
+Note. modify the `--num_processes` according to your config.
+
+### Train!
+
+Train the main model: 
+```
+python train.py -c configs/config.json -m 44k
+```
+
+Train the diffusion model: 
+```
+python train_diff.py -c configs/diffusion.yaml
+```
+
+### Infer
+
+Example:
+```
+python inference_main.py -m "logs/44k/G_94400.pth" -c "configs/config.json" -n "lemon.wav" -t 0 -s "ashin" -lg 1 -shd -dm "logs/44k/diffusion/model_9000.pt"
+```
+
+- `-shd` to use Shallow Diffusion
+- `-dm` Diffusion model path
